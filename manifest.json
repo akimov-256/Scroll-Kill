@@ -1,0 +1,21 @@
+{
+    "name": "Scroll Kill",
+    "version": "0.0.1",
+    "manifest_version": 3,
+    "description": "Blocks instagram reels in feed",
+    "permissions": [],
+    "content_scripts": [
+        {
+            "matches": ["https://*.instagram.com/*"],
+            "js": ["./scripts/contentScript.js"],
+            "css": ["./styles/styles.css"]
+        }
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_title": "Scroll Kill",
+        "default_popup": "popup.html"
+    }
+}
