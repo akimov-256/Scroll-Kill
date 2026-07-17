@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "manifest_version": 3,
     "description": "Blocks instagram reels in feed",
-    "permissions": [],
+    "permissions": [ "storage" ],
     "content_scripts": [
         {
             "matches": ["https://*.instagram.com/*"],
