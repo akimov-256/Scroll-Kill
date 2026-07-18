@@ -2,7 +2,7 @@ let uiSwitch = document.getElementById("checkBox");
 
 chrome.storage.local.get("active", (value) => {
     console.log(value.active);
-    uiSwitch.checked = value.active !== false; 
+    uiSwitch.checked = value.active === true;
 });
 
 uiSwitch.addEventListener('change', (event) => {

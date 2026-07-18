@@ -6,9 +6,8 @@
     "permissions": [ "storage" ],
     "content_scripts": [
         {
-            "matches": ["https://*.instagram.com/*"],
-            "js": ["./scripts/contentScript.js"],
-            "css": ["./styles/styles.css"]
+            "matches": ["*://*.instagram.com/*"],
+            "js": ["./scripts/contentScript.js"]
         }
     ],
     "background": {
