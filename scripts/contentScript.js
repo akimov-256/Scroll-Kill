@@ -25,7 +25,12 @@ function hideReels() {
     const anchors = document.querySelectorAll(REEL_SELECTOR);
     console.log(`[ScrollKill] Found ${anchors.length} reel anchors`);
     anchors.forEach(a => {
-        if (a.getAttribute('href') === REEL_EXACT) return;
+        if (a.getAttribute('href') === REEL_EXACT) 
+        {
+            a.style.display = 'none';
+            a.dataset.reelHidden = 'true';
+            return;
+        }
         hideReel(a);
     });
 }
