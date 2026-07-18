@@ -5,13 +5,24 @@ chrome.storage.local.get("active", (value) => {
     active = value.active !== false;
 });
 
-function hideReels(anchor) {
+function hideReels() {
     pending = false;
-    
+
+    if (!active)
+        return;
+
+    document.querySelectorAll('a[href*="/reels/"]:not([data-reel-hidden])').forEach(a => {
+        if (a.getAttribute('herf') === '/reels/')
+            return;
+        hideReel(a);
+    });
+}
+
+function hideReel(anchor) {
     let node = anchor;
     for (let i = 0; i < 15 && node; i++)
     {
-        if (node.querySelector && node.querySelector('video', 'canvas'))
+        if (node.querySelector && node.querySelector('video, canvas'))
         {
             node.style.display = 'none';
             node.dataset.cardHidden = true;
@@ -20,6 +31,16 @@ function hideReels(anchor) {
         }
         node = node.parentElement;
     }
+}
+
+function restoreReels() {
+    document.querySelectorAll('[data-card-hidden]').forEach(node => {
+        node.style.display = '';
+        delete node.dataset.cardHidden;
+    });
+    document.querySelectorAll('[data-reel-hidden]').forEach(a => {
+        delete a.dataset.reelHidden;
+    });
 }
 
 const observer = new MutationObserver(() => {
@@ -35,6 +56,8 @@ chrome.storage.onChanged.addListener((changes, area) => {
         active = changes.active.newValue;
         if (active)
             hideReels();
+        else
+            restoreReels();
     }
 });
 
