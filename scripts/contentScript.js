@@ -5,19 +5,21 @@ chrome.storage.local.get("active", (value) => {
     active = value.active !== false;
 });
 
-function hideReels() {
+function hideReels(anchor) {
     pending = false;
-
-    if (!active)
+    
+    let node = anchor;
+    for (let i = 0; i < 15 && node; i++)
     {
-        return
+        if (node.querySelector && node.querySelector('video', 'canvas'))
+        {
+            node.style.display = 'none';
+            node.dataset.cardHidden = true;
+            anchor.dataset.reelHidden = true;
+            return;
+        }
+        node = node.parentElement;
     }
-
-    document.querySelectorAll('a[href*="/reels/"]:not([data-reel-hidden])').forEach(r => {
-        r.dataset.reelHidden = 'true';
-        r.style.display = 'none';
-    });
-    pending = false;
 }
 
 const observer = new MutationObserver(() => {
