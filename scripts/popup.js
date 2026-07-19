@@ -1,4 +1,4 @@
-let uiSwitch = document.getElementById("reelscheckBox");
+let uiSwitch = document.getElementById("reelsCheckBox");
 
 chrome.storage.local.get("reelsActive", (value) => {
     console.log(value.reelsActive);
