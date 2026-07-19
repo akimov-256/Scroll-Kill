@@ -3,7 +3,7 @@ let reelsActive = false;
 let postsActive = false;
 let pending = false;
 const REEL_SELECTOR = 'a[href*="/reels/"]:not([data-reel-hidden])';
-const POST_SELECTOR = 'a[href*="/p/"]';
+const POST_SELECTOR = 'a[href*="/p/"]:not([data-post-hidden])';
 const REEL_EXACT = '/reels/';
 
 // ========== STORAGE INIT ==========
@@ -21,7 +21,7 @@ chrome.storage.local.get("postsActive", (value) => {
     if (postsActive)
     {
         hidePosts();
-        setTimout(hidePosts, 1000);
+        setTimeout(hidePosts, 1000);
     }
 });
 
