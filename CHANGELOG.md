@@ -8,9 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Known Issues
+
+## [v1.1.0]
+
+### Added
 - Added reel hiding logic in the feed.
 - Added reels tab button hiding.
 - Added extension icon.
+- Added hide all posts feature.
 
 ### Changed
 
