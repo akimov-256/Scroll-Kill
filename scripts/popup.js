@@ -1,13 +1,30 @@
-let uiSwitch = document.getElementById("checkBox");
+let reelsSwitch = document.getElementById("reelsCheckBox");
+let postsSwitch = document.getElementById("postsCheckBox");
 
-chrome.storage.local.get("active", (value) => {
-    console.log(value.active);
-    uiSwitch.checked = value.active === true;
+// Handle reels switch state
+chrome.storage.local.get("reelsActive", (value) => {
+    reelsSwitch.checked = value.reelsActive === true;
 });
 
-uiSwitch.addEventListener('change', (event) => {
+reelsSwitch.addEventListener('change', (event) => {
     if (event.target.checked)
-        chrome.storage.local.set({active: true});
+        chrome.storage.local.set({reelsActive: true});
     else
-        chrome.storage.local.set({active: false});
+        chrome.storage.local.set({reelsActive: false});
+});
+
+// Handle posts switch state
+chrome.storage.local.get("postsActive", (value) => {
+    postsSwitch.checked = value.postsActive === true;
+});
+
+postsSwitch.addEventListener('change', (event) => {
+    if (event.target.checked)
+    {
+        chrome.storage.local.set({postsActive: true});
+        chrome.storage.local.set({reelsActive: true});
+        reelsSwitch.checked = true;
+    }
+    else
+        chrome.storage.local.set({postsActive: false});
 });

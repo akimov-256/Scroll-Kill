@@ -1,23 +1,34 @@
 // ========== CONFIG ==========
-let active = false;
+let reelsActive = false;
+let postsActive = false;
 let pending = false;
 const REEL_SELECTOR = 'a[href*="/reels/"]:not([data-reel-hidden])';
+const POST_SELECTOR = 'a[href*="/p/"]:not([data-post-hidden])';
 const REEL_EXACT = '/reels/';
 
 // ========== STORAGE INIT ==========
-chrome.storage.local.get("active", (value) => {
-    active = value.active === true;
-    console.log('[ScrollKill] initial active:', active);
-    if (active) {
+chrome.storage.local.get("reelsActive", (value) => {
+    reelsActive = value.reelsActive === true;
+    console.log('[ScrollKill] initial reelsActive:', reelsActive);
+    if (reelsActive) {
         hideReels();
         setTimeout(hideReels, 1000);
+    }
+});
+
+chrome.storage.local.get("postsActive", (value) => {
+    postsActive = value.postsActive === true;
+    if (postsActive)
+    {
+        hidePosts();
+        setTimeout(hidePosts, 1000);
     }
 });
 
 // ========== CORE FUNCTIONS ==========
 function hideReels() {
     pending = false;
-    if (!active) {
+    if (!reelsActive) {
         console.log('[ScrollKill] hideReels called but inactive');
         return;
     }
@@ -52,8 +63,30 @@ function hideReel(anchor) {
     anchor.dataset.reelHidden = 'true';
 }
 
-function restoreReels() {
-    console.log('[ScrollKill] Restoring all hidden reels');
+function hidePosts() {
+    pending = false;
+    if (!postsActive) {
+        return;
+    }
+    const anchors = document.querySelectorAll(POST_SELECTOR);
+    anchors.forEach(a => {
+        hidePost(a);
+    });
+}
+
+function hidePost(anchor) {
+    const article = anchor.closest('article');
+    if (article) {
+        article.style.display = 'none';
+        article.dataset.cardHidden = 'true';
+        anchor.dataset.postHidden = 'true';
+        return;
+    }
+    anchor.style.display = 'none';
+    anchor.dataset.postHidden = 'true';
+}
+
+function restore() {
     document.querySelectorAll('[data-card-hidden]').forEach(node => {
         node.style.display = '';
         delete node.dataset.cardHidden;
@@ -62,14 +95,19 @@ function restoreReels() {
         a.style.display = '';
         delete a.dataset.reelHidden;
     });
+    document.querySelectorAll('[data-post-hidden]').forEach(a => {
+        a.style.display = '';
+        delete a.dataset.postHidden;
+    });
 }
 
 // ========== MUTATION OBSERVER ==========
 const observer = new MutationObserver(() => {
-    if (!pending && active) {
+    if (!pending && (reelsActive || postsActive)) {
         pending = true;
         requestAnimationFrame(() => {
             hideReels();
+            hidePosts();
             pending = false;
         });
     }
@@ -87,22 +125,37 @@ startObserver();
 
 // ========== STORAGE CHANGE LISTENER ==========
 chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === "local" && changes.active) {
-        const newVal = changes.active.newValue === true;
-        console.log('[ScrollKill] Storage changed active to', newVal);
-        if (active !== newVal) {
-            active = newVal;
-            if (active) {
-                hideReels();
-                setTimeout(hideReels, 500);
-            } else {
-                restoreReels();
+    if (area === "local") {
+        if (changes.reelsActive) {
+            const newVal = changes.reelsActive.newValue === true;
+            console.log('[ScrollKill] Storage changed reelsActive to', newVal);
+            if (reelsActive !== newVal) {
+                reelsActive = newVal;
+                if (reelsActive) {
+                    hideReels();
+                    setTimeout(hideReels, 500);
+                } else {
+                    restore();
+                }
+            }
+        }
+        else if (changes.postsActive) {
+            const newVal = changes.postsActive.newValue === true;
+            if (postsActive !== newVal) {
+                postsActive = newVal;
+                if (postsActive) {
+                    hidePosts();
+                    setTimeout(hidePosts, 500);
+                } else {
+                    restore();
+                }
             }
         }
     }
 });
 
-// ========== EXTRA: Run on page load / SPA navigation ==========
+// ========== Run on page load / SPA navigation ==========
 window.addEventListener('load', () => {
-    if (active) setTimeout(hideReels, 200);
+    if (reelsActive) setTimeout(hideReels, 200);
+    if (postsActive) setTimeout(hidePosts, 200);
 });
