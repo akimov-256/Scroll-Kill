@@ -1,6 +1,4 @@
 <div align="center">
-
-<div align="center">
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:2E0000,100:800000&height=180&section=header&text=Scroll%20Kill&fontSize=50&fontColor=ffffff&fontFamily=Lexend&animation=fadeIn&fontAlignY=38" width="100%" alt="Scroll Kill banner"/>
 
 <!-- Extension icon -->
