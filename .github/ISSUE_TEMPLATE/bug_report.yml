@@ -1,0 +1,73 @@
+name: 🐛 Bug report
+description: Something isn't working the way it should
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Instagram changes its layout often, so most bugs here are "a selector went stale." The more specifics you give, the faster this gets fixed.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What did you expect, and what did you get instead?
+      placeholder: Reels are still showing up in my feed even with the toggle on...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can we see this ourselves?
+      placeholder: |
+        1. Open instagram.com/ home feed
+        2. Scroll for a bit
+        3. A reel shows up around post 5-6
+    validations:
+      required: true
+
+  - type: input
+    id: page
+    attributes:
+      label: Which Instagram page/section?
+      description: Main feed, Explore, a specific profile, a Reel's comment section, etc.
+      placeholder: Main feed (instagram.com/)
+    validations:
+      required: true
+
+  - type: input
+    id: extension-version
+    attributes:
+      label: Extension version
+      description: Found in chrome://extensions or manifest.json
+      placeholder: "0.0.2"
+    validations:
+      required: true
+
+  - type: input
+    id: chrome-version
+    attributes:
+      label: Chrome version
+      placeholder: "128.0.6613.84"
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or screen recording
+      description: Drag and drop images/video here if you have them. Genuinely the fastest way to explain a DOM/layout bug.
+    validations:
+      required: false
+
+  - type: textarea
+    id: console-errors
+    attributes:
+      label: Console errors
+      description: Open DevTools (F12) → Console tab, and paste anything red in there.
+      render: shell
+    validations:
+      required: false
