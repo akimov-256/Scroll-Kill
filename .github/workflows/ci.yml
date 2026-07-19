@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-manifest:
+    name: Validate manifest.json
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check manifest.json is valid JSON
+        run: |
+          if ! jq empty manifest.json; then
+            echo "::error::manifest.json is not valid JSON"
+            exit 1
+          fi
+
+      - name: Check manifest_version is 3
+        run: |
+          version=$(jq -r '.manifest_version' manifest.json)
+          if [ "$version" != "3" ]; then
+            echo "::error::manifest_version must be 3, found $version"
+            exit 1
+          fi
+
+      - name: Check referenced files exist
+        run: |
+          missing=0
+          for f in $(jq -r '
+            [.background.service_worker,
+             (.action.default_popup // empty),
+             (.content_scripts[]?.js[]?),
+             (.content_scripts[]?.css[]?)]
+            | .[]' manifest.json); do
+            if [ ! -f "$f" ]; then
+              echo "::error::manifest.json references missing file: $f"
+              missing=1
+            fi
+          done
+          exit $missing
+
+  lint:
+    name: Lint JavaScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npm run lint
+
+  package:
+    name: Build extension zip
+    runs-on: ubuntu-latest
+    needs: [validate-manifest, lint]
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version from manifest
+        id: version
+        run: |
+          version=$(jq -r '.version' manifest.json)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Zip extension
+        run: |
+          zip -r "scroll-kill-v${{ steps.version.outputs.version }}.zip" . \
+            -x ".git/*" ".github/*" "node_modules/*" "*.md"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: scroll-kill-v${{ steps.version.outputs.version }}
+          path: scroll-kill-v${{ steps.version.outputs.version }}.zip
+          retention-days: 30
+
+  release:
+    name: Create release on version bump
+    runs-on: ubuntu-latest
+    needs: package
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download packaged zip
+        uses: actions/download-artifact@v4
+        with:
+          name: scroll-kill-v${{ needs.package.outputs.version }}
+
+      - name: Check if this version is already tagged
+        id: check_tag
+        run: |
+          tag="v${{ needs.package.outputs.version }}"
+          if git ls-remote --tags origin "refs/tags/$tag" | grep -q "$tag"; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.package.outputs.version }}
+          name: v${{ needs.package.outputs.version }}
+          files: scroll-kill-v${{ needs.package.outputs.version }}.zip
+          generate_release_notes: true

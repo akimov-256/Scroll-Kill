@@ -1,0 +1,14 @@
+{
+  "name": "scroll-kill",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Blocks instagram reels in feed",
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "eslint": "^9.9.0",
+    "globals": "^15.9.0"
+  }
+}
