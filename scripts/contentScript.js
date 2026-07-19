@@ -1,14 +1,14 @@
 // ========== CONFIG ==========
-let active = false;
+let reelsActive = false;
 let pending = false;
 const REEL_SELECTOR = 'a[href*="/reels/"]:not([data-reel-hidden])';
 const REEL_EXACT = '/reels/';
 
 // ========== STORAGE INIT ==========
-chrome.storage.local.get("active", (value) => {
-    active = value.active === true;
-    console.log('[ScrollKill] initial active:', active);
-    if (active) {
+chrome.storage.local.get("reelsActive", (value) => {
+    reelsActive = value.reelsActive === true;
+    console.log('[ScrollKill] initial reelsActive:', reelsActive);
+    if (reelsActive) {
         hideReels();
         setTimeout(hideReels, 1000);
     }
@@ -17,7 +17,7 @@ chrome.storage.local.get("active", (value) => {
 // ========== CORE FUNCTIONS ==========
 function hideReels() {
     pending = false;
-    if (!active) {
+    if (!reelsActive) {
         console.log('[ScrollKill] hideReels called but inactive');
         return;
     }
@@ -66,7 +66,7 @@ function restoreReels() {
 
 // ========== MUTATION OBSERVER ==========
 const observer = new MutationObserver(() => {
-    if (!pending && active) {
+    if (!pending && reelsActive) {
         pending = true;
         requestAnimationFrame(() => {
             hideReels();
@@ -87,12 +87,12 @@ startObserver();
 
 // ========== STORAGE CHANGE LISTENER ==========
 chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === "local" && changes.active) {
-        const newVal = changes.active.newValue === true;
-        console.log('[ScrollKill] Storage changed active to', newVal);
-        if (active !== newVal) {
-            active = newVal;
-            if (active) {
+    if (area === "local" && changes.reelsActive) {
+        const newVal = changes.reelsActive.newValue === true;
+        console.log('[ScrollKill] Storage changed reelsActive to', newVal);
+        if (reelsActive !== newVal) {
+            reelsActive = newVal;
+            if (reelsActive) {
                 hideReels();
                 setTimeout(hideReels, 500);
             } else {
@@ -104,5 +104,5 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
 // ========== EXTRA: Run on page load / SPA navigation ==========
 window.addEventListener('load', () => {
-    if (active) setTimeout(hideReels, 200);
+    if (reelsActive) setTimeout(hideReels, 200);
 });
