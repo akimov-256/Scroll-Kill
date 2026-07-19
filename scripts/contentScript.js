@@ -1,7 +1,9 @@
 // ========== CONFIG ==========
 let reelsActive = false;
+let postsActive = false;
 let pending = false;
 const REEL_SELECTOR = 'a[href*="/reels/"]:not([data-reel-hidden])';
+const POST_SELECTOR = 'a[href*="/p/"]';
 const REEL_EXACT = '/reels/';
 
 // ========== STORAGE INIT ==========
@@ -11,6 +13,15 @@ chrome.storage.local.get("reelsActive", (value) => {
     if (reelsActive) {
         hideReels();
         setTimeout(hideReels, 1000);
+    }
+});
+
+chrome.storage.local.get("postsActive", (value) => {
+    postsActive = value.postsActive === true;
+    if (postsActive)
+    {
+        hidePosts();
+        setTimout(hidePosts, 1000);
     }
 });
 
@@ -52,8 +63,30 @@ function hideReel(anchor) {
     anchor.dataset.reelHidden = 'true';
 }
 
-function restoreReels() {
-    console.log('[ScrollKill] Restoring all hidden reels');
+function hidePosts() {
+    pending = false;
+    if (!postsActive) {
+        return;
+    }
+    const anchors = document.querySelectorAll(POST_SELECTOR);
+    anchors.forEach(a => {
+        hidePost(a);
+    });
+}
+
+function hidePost(anchor) {
+    const article = anchor.closest('article');
+    if (article) {
+        article.style.display = 'none';
+        article.dataset.cardHidden = 'true';
+        anchor.dataset.postHidden = 'true';
+        return;
+    }
+    anchor.style.display = 'none';
+    anchor.dataset.postHidden = 'true';
+}
+
+function restore() {
     document.querySelectorAll('[data-card-hidden]').forEach(node => {
         node.style.display = '';
         delete node.dataset.cardHidden;
@@ -62,14 +95,19 @@ function restoreReels() {
         a.style.display = '';
         delete a.dataset.reelHidden;
     });
+    document.querySelectorAll('[data-post-hidden]').forEach(a => {
+        a.style.display = '';
+        delete a.dataset.postHidden;
+    });
 }
 
 // ========== MUTATION OBSERVER ==========
 const observer = new MutationObserver(() => {
-    if (!pending && reelsActive) {
+    if (!pending && (reelsActive || postsActive)) {
         pending = true;
         requestAnimationFrame(() => {
             hideReels();
+            hidePosts();
             pending = false;
         });
     }
@@ -87,22 +125,37 @@ startObserver();
 
 // ========== STORAGE CHANGE LISTENER ==========
 chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === "local" && changes.reelsActive) {
-        const newVal = changes.reelsActive.newValue === true;
-        console.log('[ScrollKill] Storage changed reelsActive to', newVal);
-        if (reelsActive !== newVal) {
-            reelsActive = newVal;
-            if (reelsActive) {
-                hideReels();
-                setTimeout(hideReels, 500);
-            } else {
-                restoreReels();
+    if (area === "local") {
+        if (changes.reelsActive) {
+            const newVal = changes.reelsActive.newValue === true;
+            console.log('[ScrollKill] Storage changed reelsActive to', newVal);
+            if (reelsActive !== newVal) {
+                reelsActive = newVal;
+                if (reelsActive) {
+                    hideReels();
+                    setTimeout(hideReels, 500);
+                } else {
+                    restore();
+                }
+            }
+        }
+        else if (changes.postsActive) {
+            const newVal = changes.postsActive.newValue === true;
+            if (postsActive !== newVal) {
+                postsActive = newVal;
+                if (postsActive) {
+                    hidePosts();
+                    setTimeout(hidePosts, 500);
+                } else {
+                    restore();
+                }
             }
         }
     }
 });
 
-// ========== EXTRA: Run on page load / SPA navigation ==========
+// ========== Run on page load / SPA navigation ==========
 window.addEventListener('load', () => {
     if (reelsActive) setTimeout(hideReels, 200);
+    if (postsActive) setTimeout(hidePosts, 200);
 });
