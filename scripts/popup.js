@@ -20,7 +20,11 @@ chrome.storage.local.get("postsActive", (value) => {
 
 postsSwitch.addEventListener('change', (event) => {
     if (event.target.checked)
+    {
         chrome.storage.local.set({postsActive: true});
+        chrome.storage.local.set({reelsActive: true});
+        reelsSwitch.checked = true;
+    }
     else
         chrome.storage.local.set({postsActive: false});
 });
