@@ -10,7 +10,11 @@ reelsSwitch.addEventListener('change', (event) => {
     if (event.target.checked)
         chrome.storage.local.set({reelsActive: true});
     else
+    {
         chrome.storage.local.set({reelsActive: false});
+        chrome.storage.local.set({postsActive: false});
+        postsSwitch.checked = false;
+    }
 });
 
 // Handle posts switch state
